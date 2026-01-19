@@ -1,13 +1,8 @@
 package main
 
-import {
+import (
 	"fmt"
-	"github.com/pgrigorakis/gator/internal/config"
-}
-
-type state struct {
-	cfg *Config
-}
+)
 
 type command struct {
 	name string
