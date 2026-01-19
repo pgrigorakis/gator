@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"github.com/pgrigorakis/gator/internal/config"
-	"github.com/pgrigorakis/gator/cmd/commands"
 )
+
+type state struct {
+	cfg *config.Config
+}
 
 func main() {
 	cfg, err := config.Read()
@@ -13,8 +16,9 @@ func main() {
 		return
 	}
 
-	state :=    
-
+	programState := &state{cfg: &cfg}
+	commandsMap := make(map[string]func(*state, command) error)
+	commands := &commands{commandsMap: &commandsMap}
 
 	current_user := "potis"
 	err = cfg.SetUser(current_user)
