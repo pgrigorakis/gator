@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/bohemian83/gator/internal/config"
+	"github.com/pgrigorakis/gator/internal/config"
+	"github.com/pgrigorakis/gator/cmd/commands"
 )
 
 func main() {
@@ -12,6 +12,9 @@ func main() {
 		fmt.Printf("error: %v\n", err)
 		return
 	}
+
+	state :=    
+
 
 	current_user := "potis"
 	err = cfg.SetUser(current_user)
