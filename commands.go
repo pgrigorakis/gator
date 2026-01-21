@@ -13,22 +13,6 @@ type commands struct {
 	commandMap map[string]func(*state, command) error
 }
 
-func handlerLogin(s *state, cmd command) error {
-	if len(cmd.args) == 0 {
-		return fmt.Errorf("no username")
-	}
-
-	err := s.cfg.SetUser(cmd.args[0])
-	if err != nil {
-		return err
-	}
-
-	fmt.Printf("User has been set to: %v\n", cmd.args[0])
-
-	return nil
-
-}
-
 func (c *commands) run(s *state, cmd command) error {
 	handler, exists := c.commandMap[cmd.name]
 	if !exists {
