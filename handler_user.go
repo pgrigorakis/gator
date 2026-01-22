@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -51,7 +50,7 @@ func handlerRegister(s *state, cmd command) error {
 	}
 
 	fmt.Printf("User created: %v\n", cmd.args[0])
-	log.Printf("\nid: %v,\ncreated at: %v,\nupdated at: %v,\nname: %v\n", user.ID.String(), user.CreatedAt, user.UpdatedAt, user.Name)
+	printUser(user)
 
 	return nil
 
@@ -72,4 +71,9 @@ func handlerUsersList(s *state, cmd command) error {
 	}
 
 	return nil
+}
+
+func printUser(user database.User) {
+	fmt.Printf(" * ID:      %v\n", user.ID)
+	fmt.Printf(" * Name:    %v\n", user.Name)
 }
