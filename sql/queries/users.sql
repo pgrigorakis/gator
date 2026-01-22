@@ -7,3 +7,12 @@ VALUES (
     $4
 )
 RETURNING *;
+
+-- name: GetUser :one
+SELECT * from users WHERE name = $1 LIMIT 1;
+
+-- name: GetAllUsers :many
+SELECT * from users;
+
+-- name: DeleteUsers :exec
+DELETE FROM users;

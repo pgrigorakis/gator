@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -16,15 +15,13 @@ func handlerLogin(s *state, cmd command) error {
 		return fmt.Errorf("usage: %s <name>", cmd.name)
 	}
 
-	ctx := context.Background()
-
-	_, err := s.db.GetUser(ctx, cmd.args[0])
+	_, err := s.db.GetUser(context.Background(), cmd.args[0])
 	if err != nil {
-		return errors.New("no such user exists")
+		return fmt.Errorf("couldn't find user: %w", err)
 	}
 	err = s.cfg.SetUser(cmd.args[0])
 	if err != nil {
-		return err
+		return fmt.Errorf("couldn't set current user: %w", err)
 	}
 
 	fmt.Printf("User has been set to: %v\n", cmd.args[0])
@@ -37,33 +34,42 @@ func handlerRegister(s *state, cmd command) error {
 	if len(cmd.args) != 1 {
 		return fmt.Errorf("usage: %s <name>", cmd.name)
 	}
-	ctx := context.Background()
 
-	now := time.Now()
-
-	_, err := s.db.GetUser(ctx, cmd.args[0])
-	if err == nil {
-		return errors.New("user exists already")
-	} else {
-		registeredUser, err := s.db.CreateUser(ctx, database.CreateUserParams{
-			ID:        uuid.New(),
-			CreatedAt: now,
-			UpdatedAt: now,
-			Name:      cmd.args[0],
-		})
-		if err != nil {
-			return err
-		}
-
-		err = s.cfg.SetUser(cmd.args[0])
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("User has been set to: %v\n", cmd.args[0])
-		log.Printf("\nid: %v,\ncreated at: %v,\nupdated at: %v,\nname: %v\n", registeredUser.ID.String(), registeredUser.CreatedAt, registeredUser.UpdatedAt, registeredUser.Name)
+	user, err := s.db.CreateUser(context.Background(), database.CreateUserParams{
+		ID:        uuid.New(),
+		CreatedAt: time.Now().UTC(),
+		UpdatedAt: time.Now().UTC(),
+		Name:      cmd.args[0],
+	})
+	if err != nil {
+		return fmt.Errorf("couldn't create user: %w", err)
 	}
+
+	err = s.cfg.SetUser(user.Name)
+	if err != nil {
+		return fmt.Errorf("couldn't set current user: %w", err)
+	}
+
+	fmt.Printf("User created: %v\n", cmd.args[0])
+	log.Printf("\nid: %v,\ncreated at: %v,\nupdated at: %v,\nname: %v\n", user.ID.String(), user.CreatedAt, user.UpdatedAt, user.Name)
 
 	return nil
 
+}
+
+func handlerUsersList(s *state, cmd command) error {
+	usersList, err := s.db.GetAllUsers(context.Background())
+	if err != nil {
+		return fmt.Errorf("couldn't list users: %w", err)
+	}
+
+	for i := range usersList {
+		marker := ""
+		if usersList[i].Name == s.cfg.CurrentUserName {
+			marker = " (current)"
+		}
+		fmt.Printf("* %v%v\n", usersList[i].Name, marker)
+	}
+
+	return nil
 }
