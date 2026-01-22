@@ -11,6 +11,9 @@ RETURNING *;
 -- name: GetUser :one
 SELECT * from users WHERE name = $1 LIMIT 1;
 
+-- name: GetUserByID :one
+SELECT * from users WHERE id = $1 LIMIT 1;
+
 -- name: GetAllUsers :many
 SELECT * from users;
 
