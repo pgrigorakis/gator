@@ -56,7 +56,7 @@ func handlerRegister(s *state, cmd command) error {
 
 }
 
-func handlerUsersList(s *state, cmd command) error {
+func handlerListUsers(s *state, cmd command) error {
 	usersList, err := s.db.GetAllUsers(context.Background())
 	if err != nil {
 		return fmt.Errorf("couldn't list users: %w", err)
