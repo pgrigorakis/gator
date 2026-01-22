@@ -31,10 +31,10 @@ func main() {
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
 	cmds.register("reset", handlerResetDB)
-	cmds.register("users", handlerUsersList)
+	cmds.register("users", handlerListUsers)
 	cmds.register("agg", handlerRSS)
 	cmds.register("addfeed", handlerAddFeed)
-
+	cmds.register("feeds", handlerListFeeds)
 	userArgs := os.Args
 	if len(userArgs) < 2 {
 		log.Fatal("error: no command entered")
