@@ -33,6 +33,7 @@ func main() {
 	cmds.register("reset", handlerResetDB)
 	cmds.register("users", handlerUsersList)
 	cmds.register("agg", handlerRSS)
+	cmds.register("addfeed", handlerAddFeed)
 
 	userArgs := os.Args
 	if len(userArgs) < 2 {
