@@ -1,12 +1,13 @@
 package main
 
-import _ "github.com/lib/pq"
 import (
 	"database/sql"
-	"github.com/pgrigorakis/gator/internal/config"
-	"github.com/pgrigorakis/gator/internal/database"
 	"log"
 	"os"
+
+	_ "github.com/lib/pq"
+	"github.com/pgrigorakis/gator/internal/config"
+	"github.com/pgrigorakis/gator/internal/database"
 )
 
 type state struct {
@@ -29,6 +30,10 @@ func main() {
 	cmds := &commands{commandMap: make(map[string]func(*state, command) error)}
 	cmds.register("login", handlerLogin)
 	cmds.register("register", handlerRegister)
+	cmds.register("reset", handlerResetDB)
+	cmds.register("users", handlerUsersList)
+	cmds.register("agg", handlerRSS)
+
 	userArgs := os.Args
 	if len(userArgs) < 2 {
 		log.Fatal("error: no command entered")
