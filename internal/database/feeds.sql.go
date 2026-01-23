@@ -146,11 +146,11 @@ func (q *Queries) GetAllFeeds(ctx context.Context) ([]Feed, error) {
 }
 
 const getFeedByUrl = `-- name: GetFeedByUrl :one
-SELECT id, created_at, updated_at, name, url, user_id FROM feeds where id = $1
+SELECT id, created_at, updated_at, name, url, user_id FROM feeds where url = $1
 `
 
-func (q *Queries) GetFeedByUrl(ctx context.Context, id uuid.UUID) (Feed, error) {
-	row := q.db.QueryRowContext(ctx, getFeedByUrl, id)
+func (q *Queries) GetFeedByUrl(ctx context.Context, url string) (Feed, error) {
+	row := q.db.QueryRowContext(ctx, getFeedByUrl, url)
 	var i Feed
 	err := row.Scan(
 		&i.ID,
@@ -161,4 +161,56 @@ func (q *Queries) GetFeedByUrl(ctx context.Context, id uuid.UUID) (Feed, error) 
 		&i.UserID,
 	)
 	return i, err
+}
+
+const getFeedFollowsByUserName = `-- name: GetFeedFollowsByUserName :many
+SELECT 
+    feed_follows.id, feed_follows.created_at, feed_follows.updated_at, feed_follows.user_id, feed_follows.feed_id,
+    feeds.name AS feed_name,
+    users.name AS user_name
+FROM feed_follows 
+INNER JOIN users ON feed_follows.user_id = users.id
+INNER JOIN feeds ON feed_follows.feed_id = feeds.id
+WHERE users.name = $1
+`
+
+type GetFeedFollowsByUserNameRow struct {
+	ID        uuid.UUID
+	CreatedAt time.Time
+	UpdatedAt time.Time
+	UserID    uuid.UUID
+	FeedID    uuid.UUID
+	FeedName  string
+	UserName  string
+}
+
+func (q *Queries) GetFeedFollowsByUserName(ctx context.Context, name string) ([]GetFeedFollowsByUserNameRow, error) {
+	rows, err := q.db.QueryContext(ctx, getFeedFollowsByUserName, name)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetFeedFollowsByUserNameRow
+	for rows.Next() {
+		var i GetFeedFollowsByUserNameRow
+		if err := rows.Scan(
+			&i.ID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.UserID,
+			&i.FeedID,
+			&i.FeedName,
+			&i.UserName,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
 }
