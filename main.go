@@ -35,6 +35,9 @@ func main() {
 	cmds.register("agg", handlerRSS)
 	cmds.register("addfeed", handlerAddFeed)
 	cmds.register("feeds", handlerListFeeds)
+	cmds.register("follow", handlerFollowFeed)
+	cmds.register("following", handlerFollowing)
+
 	userArgs := os.Args
 	if len(userArgs) < 2 {
 		log.Fatal("error: no command entered")
