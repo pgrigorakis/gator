@@ -25,7 +25,7 @@ type RSSItem struct {
 	PubDate     string `xml:"pubDate"`
 }
 
-func FetchFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
+func GetFeed(ctx context.Context, feedURL string) (*RSSFeed, error) {
 	client := &http.Client{
 		Timeout: 5 * time.Second,
 	}
