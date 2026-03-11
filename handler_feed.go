@@ -7,31 +7,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pgrigorakis/gator/internal/database"
-	"github.com/pgrigorakis/gator/internal/rss"
 )
 
-func handlerRSS(s *state, cmd command) error {
-	if len(cmd.args) != 1 {
-		return fmt.Errorf("usage: %s <url>", cmd.name)
-	}
-	url := cmd.args[0]
-
-	feed, err := rss.GetFeed(context.Background(), url)
-	if err != nil {
-		return fmt.Errorf("couldn't fetch feed: %w", err)
-	}
-
-	fmt.Printf("Feed: %+v\n", feed)
-
-	return nil
-}
-
-func handlerAddFeed(s *state, cmd command) error {
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("couldn't find user: %w", err)
-	}
-
+func handlerAddFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 2 {
 		return fmt.Errorf("usage: %s <feed name> <url>", cmd.name)
 	}
@@ -51,7 +29,7 @@ func handlerAddFeed(s *state, cmd command) error {
 		return fmt.Errorf("couldn't create feed: %w", err)
 	}
 
-	_, err = s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
+	feedFollow, err := s.db.CreateFeedFollow(context.Background(), database.CreateFeedFollowParams{
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
@@ -64,7 +42,10 @@ func handlerAddFeed(s *state, cmd command) error {
 
 	fmt.Printf("Feed '%v' added to user %v\n", feedName, user.Name)
 	printFeed(feed, user)
-
+	fmt.Println("Feed followed successfully:")
+	fmt.Printf("* Feed:      %v\n", feedFollow.FeedName)
+	fmt.Printf("* User:      %v\n", feedFollow.UserName)
+	fmt.Println("===============================================")
 	return nil
 }
 
@@ -85,7 +66,7 @@ func handlerListFeeds(s *state, cmd command) error {
 		if err != nil {
 			return fmt.Errorf("could not find user by id: %w", err)
 		}
-		fmt.Println("======================")
+		fmt.Println("===============================================")
 		printFeed(feed, user)
 	}
 
