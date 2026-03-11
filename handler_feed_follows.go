@@ -9,16 +9,11 @@ import (
 	"github.com/pgrigorakis/gator/internal/database"
 )
 
-func handlerFollowFeed(s *state, cmd command) error {
+func handlerFollowFeed(s *state, cmd command, user database.User) error {
 	if len(cmd.args) != 1 {
 		return fmt.Errorf("usage: %s <url>", cmd.name)
 	}
 	url := cmd.args[0]
-
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("couldn't find user: %w", err)
-	}
 
 	feed, err := s.db.GetFeedByUrl(context.Background(), url)
 	if err != nil {
@@ -36,18 +31,13 @@ func handlerFollowFeed(s *state, cmd command) error {
 		return fmt.Errorf("couldn't create feed: %w", err)
 	}
 
-	fmt.Printf("* Feed Name:      %s\n", feedFollow.FeedName)
-	fmt.Printf("* Current User:   %v\n", feedFollow.UserName)
+	fmt.Printf("* Feed:      %v\n", feedFollow.FeedName)
+	fmt.Printf("* User:		 %v\n", feedFollow.UserName)
 	return nil
 
 }
 
-func handlerListFollowedFeeds(s *state, cmd command) error {
-	user, err := s.db.GetUser(context.Background(), s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("couldn't find user: %w", err)
-	}
-
+func handlerListFollowedFeeds(s *state, cmd command, user database.User) error {
 	feeds, err := s.db.GetFeedFollowsByUserName(context.Background(), user.Name)
 	if err != nil {
 		return fmt.Errorf("couldn't find feed with this url: %w", err)
@@ -65,4 +55,28 @@ func handlerListFollowedFeeds(s *state, cmd command) error {
 	}
 	return nil
 
+}
+
+func handlerUnfollowFeed(s *state, cmd command, user database.User) error {
+	if len(cmd.args) != 1 {
+		return fmt.Errorf("usage: %s <url>", cmd.name)
+	}
+	url := cmd.args[0]
+
+	feed, err := s.db.GetFeedByUrl(context.Background(), url)
+	if err != nil {
+		return fmt.Errorf("couldn't find feed with this url: %w", err)
+	}
+
+	err = s.db.DeleteFeedFollow(context.Background(), database.DeleteFeedFollowParams{
+		FeedID: feed.ID,
+		Name:   user.Name,
+	})
+
+	fmt.Println("Feed unfollowed successfully:")
+	fmt.Printf("* Feed:      %v\n", feed.Name)
+	fmt.Printf("* User:      %v\n", user.Name)
+	fmt.Println("===============================================")
+
+	return nil
 }
