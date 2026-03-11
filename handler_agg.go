@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
@@ -109,4 +110,35 @@ func handlerRSS(s *state, cmd command) error {
 	for ; ; <-ticker.C {
 		scrapeFeeds(s)
 	}
+}
+
+func handlerBrowseFeed(s *state, cmd command, user database.User) error {
+	if len(cmd.args) > 1 {
+		return fmt.Errorf("usage: %s <number, default is 2>", cmd.name)
+	}
+
+	limit := 2
+	var err error
+	if len(cmd.args) == 1 {
+		limit, err = strconv.Atoi(cmd.args[0])
+		if err != nil {
+			return fmt.Errorf("could not parse argument: %w", err)
+		}
+	}
+
+	fmt.Printf("%v", limit)
+
+	posts, err := s.db.GetPostsForUser(context.Background(), database.GetPostsForUserParams{
+		UserID: user.ID,
+		Limit:  int32(limit),
+	})
+	if err != nil {
+		return fmt.Errorf("could not retrieve posts for %s: %w", user.Name, err)
+	}
+
+	for _, post := range posts {
+		fmt.Printf("     %v\n", post.Description.String)
+	}
+
+	return nil
 }
