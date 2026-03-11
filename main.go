@@ -33,10 +33,11 @@ func main() {
 	cmds.register("reset", handlerResetDB)
 	cmds.register("users", handlerListUsers)
 	cmds.register("agg", handlerRSS)
-	cmds.register("addfeed", handlerAddFeed)
+	cmds.register("addfeed", middlewareLoggedIn(handlerAddFeed))
 	cmds.register("feeds", handlerListFeeds)
-	cmds.register("follow", handlerFollowFeed)
-	cmds.register("following", handlerListFollowedFeeds)
+	cmds.register("follow", middlewareLoggedIn(handlerFollowFeed))
+	cmds.register("following", middlewareLoggedIn(handlerListFollowedFeeds))
+	cmds.register("unfollow", middlewareLoggedIn(handlerUnfollowFeed))
 
 	userArgs := os.Args
 	if len(userArgs) < 2 {
